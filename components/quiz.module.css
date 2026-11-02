@@ -44,7 +44,6 @@
   outline-offset: 2px;
 }
 
-.fileInput,
 .srOnly {
   position: absolute;
   width: 1px;
@@ -60,6 +59,43 @@
   background: var(--wrong-bg);
   color: var(--wrong);
   font-weight: 600;
+}
+
+.paperList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.paperButton {
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 18px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.paperButton:hover {
+  border-color: var(--primary);
+  background: var(--selected-bg);
+}
+
+.paperButton:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.problems {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
 .questionNumber {

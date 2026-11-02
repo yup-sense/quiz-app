@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { formatScore, gradeQuiz, parseQuizFile } from "./quiz.ts";
+import { formatScore, gradeQuiz, parseQuestionPaper } from "./quiz.ts";
 
 const validQuestion = {
   question: "문제",
@@ -10,12 +10,12 @@ const validQuestion = {
   explanation: "해설",
 };
 
-function fileWith(questions: unknown) {
-  return JSON.stringify({ questions });
+function fileWith(questions: unknown, title: unknown = "제목") {
+  return JSON.stringify({ title, questions });
 }
 
 function errorOf(text: string) {
-  const result = parseQuizFile(text);
+  const result = parseQuestionPaper(text);
   assert.equal(result.ok, false);
   return result.ok ? "" : result.error;
 }
@@ -39,16 +39,22 @@ test("정답 번호는 1부터 센다", () => {
   assert.equal(graded.total, 2);
 });
 
-test("예시 문제 파일을 그대로 읽는다", () => {
-  const text = readFileSync(new URL("../sample-questions.json", import.meta.url), "utf8");
-  const result = parseQuizFile(text);
+test("예시 문제지를 그대로 읽는다", () => {
+  const text = readFileSync(
+    new URL("../question-papers/sample-questions.json", import.meta.url),
+    "utf8",
+  );
+  const result = parseQuestionPaper(text);
   assert.ok(result.ok);
-  assert.equal(result.questions.length, 10);
+  assert.equal(result.paper.title, "중학교 정보과목");
+  assert.equal(result.paper.questions.length, 10);
 });
 
 test("잘못된 파일은 쉬운 오류 문구를 돌려준다", () => {
-  assert.match(errorOf("{ 이건 JSON이 아님"), /JSON 문제 파일인지/);
-  assert.match(errorOf("{}"), /문제 목록\(questions\)/);
+  assert.match(errorOf("{ 이건 JSON이 아님"), /JSON 형식/);
+  assert.match(errorOf(JSON.stringify({ questions: [validQuestion] })), /제목\(title\)/);
+  assert.match(errorOf(fileWith([validQuestion], " ")), /제목\(title\)/);
+  assert.match(errorOf(JSON.stringify({ title: "제목" })), /문제 목록\(questions\)/);
   assert.match(errorOf(fileWith([])), /문제가 하나도 없습니다/);
   assert.match(
     errorOf(fileWith([validQuestion, { ...validQuestion, options: ["가", "나", "다"] }])),

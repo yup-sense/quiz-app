@@ -8,8 +8,13 @@ export type Question = {
   explanation: string;
 };
 
+export type QuestionPaper = {
+  title: string;
+  questions: Question[];
+};
+
 export type ParseResult =
-  | { ok: true; questions: Question[] }
+  | { ok: true; paper: QuestionPaper }
   | { ok: false; error: string };
 
 export type QuestionResult = {
@@ -29,27 +34,27 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim() !== "";
 }
 
-export function parseQuizFile(text: string): ParseResult {
+export function parseQuestionPaper(text: string): ParseResult {
   let data: unknown;
   try {
     data = JSON.parse(text);
   } catch {
     return {
       ok: false,
-      error: "파일을 읽을 수 없습니다. JSON 문제 파일인지 확인해 주세요.",
+      error: "파일을 읽을 수 없습니다. JSON 형식이 맞는지 확인해 주세요.",
     };
   }
 
-  const list =
-    typeof data === "object" && data !== null
-      ? (data as { questions?: unknown }).questions
-      : undefined;
+  const root =
+    typeof data === "object" && data !== null && !Array.isArray(data)
+      ? (data as { title?: unknown; questions?: unknown })
+      : {};
+  if (!isNonEmptyString(root.title)) {
+    return { ok: false, error: "문제지 제목(title)이 비어 있습니다." };
+  }
+  const list = root.questions;
   if (!Array.isArray(list)) {
-    return {
-      ok: false,
-      error:
-        "파일에서 문제 목록(questions)을 찾을 수 없습니다. 선생님께 받은 문제 파일인지 확인해 주세요.",
-    };
+    return { ok: false, error: "파일에서 문제 목록(questions)을 찾을 수 없습니다." };
   }
   if (list.length === 0) {
     return { ok: false, error: "파일에 문제가 하나도 없습니다." };
@@ -94,7 +99,7 @@ export function parseQuizFile(text: string): ParseResult {
     });
   }
 
-  return { ok: true, questions };
+  return { ok: true, paper: { title: root.title, questions } };
 }
 
 // answers[i]는 i번째 문항에서 고른 보기 번호(1~4).
