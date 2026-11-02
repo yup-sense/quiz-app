@@ -10,11 +10,14 @@ const sampleText = readFileSync(
 
 test("실제 question-papers 폴더의 문제지를 읽는다", () => {
   const { papers, problems } = loadQuestionPapers();
+  // 파일 이름 순: high-school-questions.json → sample-questions.json
   assert.deepEqual(
-    papers.map((p) => p.title),
-    ["중학교 정보과목"],
+    papers.map((p) => [p.title, p.questions.length]),
+    [
+      ["고등학교 정보과목", 10],
+      ["중학교 정보과목", 10],
+    ],
   );
-  assert.equal(papers[0].questions.length, 10);
   assert.deepEqual(problems, []);
 });
 
